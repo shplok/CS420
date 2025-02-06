@@ -40,7 +40,7 @@ Theorem ex2:
 Proof.
 intros x.
 simpl.
-reflexitivty.
+reflexivity.
 Qed.
 
 (**
@@ -51,7 +51,7 @@ Show that [1 + n] equals the successor of [n].
 Theorem ex3:
   forall n, 1 + n = S n.
 Proof.
-intros n,
+intros num.
 simpl.
 reflexivity.
 Qed.
@@ -64,8 +64,11 @@ Show that if [x = y], then [y = x].
 Theorem ex4:
   forall x (y:nat), x = y -> y = x.
 Proof.
-
-Admitted.
+intros x y H.
+rewrite -> H.
+simpl.
+reflexivity.
+Qed.
 
 (**
 
@@ -79,6 +82,7 @@ Theorem ex5:
 Proof.
 
 Admitted.
+
 
 (**
 
