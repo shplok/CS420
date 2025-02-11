@@ -82,10 +82,12 @@ Theorem ex5:
 Proof.
 intros.
 destruct b.
+        
 - assert (H' : forall (b : bool), orb true b = true). { reflexivity. }
   rewrite H' in H.
   rewrite <- H.
   reflexivity.
+        
 - assert (H': forall (b : bool), andb false b = false). { reflexivity. }
   rewrite H' in H.
   rewrite -> H.
