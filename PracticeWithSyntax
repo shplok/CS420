@@ -1,0 +1,28 @@
+(* Demonstrate proving if a = b and b = c then a = c *)
+
+
+Goal
+ forall (a b c : nat),
+  a = b -> 
+  b = c ->
+  a = c.
+Proof.
+intros.
+rewrite H.
+rewrite H0.
+reflexivity.
+Qed.
+
+
+Goal
+ forall (a b c : nat),
+  a = b -> 
+  (a = b -> b = c) ->
+  b = c.
+Proof.
+intros.
+assert (Ha := H0 H).
+rewrite Ha.
+reflexivity.
+Qed.
+
