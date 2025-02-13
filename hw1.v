@@ -1,4 +1,4 @@
-(*
+a(*
         #####################################################
         ###  PLEASE DO NOT DISTRIBUTE SOLUTIONS PUBLICLY  ###
         #####################################################
@@ -80,18 +80,12 @@ then both boolean values are equal.
 Theorem ex5:
   forall (b c : bool), (andb b c = orb b c) -> b = c.
 Proof.
-intros.
-destruct b.
-        
-- assert (H' : forall (b : bool), orb true b = true). { reflexivity. }
-  rewrite H' in H.
-  rewrite <- H.
-  reflexivity.
-        
-- assert (H': forall (b : bool), andb false b = false). { reflexivity. }
-  rewrite H' in H.
-  rewrite -> H.
-  reflexivity.
+intros b c H.
+destruct b, c.
+- reflexivity.
+- simpl in H. rewrite H. reflexivity.
+- simpl in H. rewrite H. reflexivity.
+- reflexivity.
 Qed.
 
 
@@ -131,10 +125,7 @@ Proof.
 intros.
 induction n.
 
-- simpl in H.
-    rewrite H.
-    reflexivity.
-
+- simpl in H. apply H.
 - simpl in H. apply eq_add_S in H.
     apply IHn.
     rewrite H.
@@ -150,40 +141,36 @@ separately.
 
  *)
 
-Lemma x_plus0 x :
-  x + 0 = x.
+Theorem add_succ_r: 
+  forall x y, x + S y = S (x + y).
 Proof.
-  induction x.
-  - simpl. reflexivity.
-  - simpl. rewrite IHx. reflexivity.
-Qed.
-
-Lemma x_plusSy x y :
-  x + S y = S (x + y).
-Proof.
-  induction x.
-  - simpl. reflexivity.
-  - simpl. rewrite IHx. reflexivity.
+intros x y.
+induction x.
+- simpl. 
+  reflexivity.
+- simpl.
+  rewrite IHx.
+  reflexivity.
 Qed.
 
 Theorem ex8:
   forall x y, x + y = y + x.
 Proof.
-  intros x y.
-  induction x.
-  - (* Case: 0 + y = y + 0 *)
-    simpl.
-    assert (H: y + 0 = y).
-    { apply x_plus0. }
-    rewrite H.
-    reflexivity.
-  - (* Case: S x + y = y + S x *)
-    simpl.
-    assert (H: y + S x = S (y + x)).
-    { apply x_plusSy. }
-    rewrite H.
-    rewrite IHx.
-    reflexivity.
+intros x y.
+induction y.
+- (* Base case: x + 0 = 0 + x *)
+  simpl.
+  assert (H: x + 0 = x).
+  { induction x.
+    - simpl. reflexivity.
+    - simpl. rewrite IHx. reflexivity. }
+  rewrite H.
+  reflexivity.
+- (* Inductive case: x + S y = S y + x *)
+  simpl.
+  rewrite add_succ_r.
+  rewrite IHy.
+  reflexivity.
 Qed.
 
 (**
@@ -204,6 +191,3 @@ rewrite ex8 in H. rewrite (ex8 y) in H. apply ex7 in H.
 rewrite H.
 reflexivity.
 Qed.
-
-
-
