@@ -25,10 +25,8 @@ Show that 5 equals 5.
 Theorem ex1:
   5 = 5.
 Proof.
-
-simpl.
-reflexivity.
-
+simpl.          (* simplify any expressions if possible *)
+reflexivity.    (* prove equality by showing both sides are identical *)
 Qed.
 (**
 
@@ -38,9 +36,9 @@ Show that equality for natural numbers is reflexive.
 Theorem ex2:
   forall (x:nat), x = x.
 Proof.
-intros x.
-simpl.
-reflexivity.
+intros x.       (* introduce x into context *)
+simpl.          (* simplify if possible *)
+reflexivity.    (* prove equality by showing both sides are identical *)
 Qed.
 
 (**
@@ -51,9 +49,9 @@ Show that [1 + n] equals the successor of [n].
 Theorem ex3:
   forall n, 1 + n = S n.
 Proof.
-intros num.
-simpl.
-reflexivity.
+intros num.     (* introduce n as num into context *)
+simpl.          (* simplify 1 + n to S n *)
+reflexivity.    (* prove equality by showing both sides are identical *)
 Qed.
 
 (**
@@ -64,10 +62,10 @@ Show that if [x = y], then [y = x].
 Theorem ex4:
   forall x (y:nat), x = y -> y = x.
 Proof.
-intros x y H.
-rewrite -> H.
-simpl.
-reflexivity.
+intros x y H.   (* introduce x, y and hypothesis H into context *)
+rewrite -> H.   (* replace x with y based on hypothesis H *)
+simpl.          (* simplify if possible *)
+reflexivity.    (* prove equality by showing both sides are identical *)
 Qed.
 
 (**
@@ -80,12 +78,16 @@ then both boolean values are equal.
 Theorem ex5:
   forall (b c : bool), (andb b c = orb b c) -> b = c.
 Proof.
-intros b c H.
-destruct b, c.
-- reflexivity.
-- simpl in H. rewrite H. reflexivity.
-- simpl in H. rewrite H. reflexivity.
-- reflexivity.
+intros b c H.   (* introduce b, c and hypothesis H into context *)
+destruct b, c.  (* case analysis on both b and c *)
+- reflexivity.  (* true = true case *)
+- simpl in H.   (* simplify hypothesis for true = false case *)
+  rewrite H.    (* use the hypothesis *)
+  reflexivity.  (* prove equality *)
+- simpl in H.   (* simplify hypothesis for false = true case *)
+  rewrite H.    (* use the hypothesis *)
+  reflexivity.  (* prove equality *)
+- reflexivity.  (* false = false case *)
 Qed.
 
 
@@ -99,15 +101,13 @@ the outer most.
 Theorem ex6:
   forall n m, n + S m = S (n + m).
 Proof.
-intros.
-induction n.
-
-- simpl.
-    reflexivity.
-
-- simpl.
-    rewrite IHn.
-    reflexivity.
+intros.         (* introduce n and m into context *)
+induction n.    (* induction on n *)
+- simpl.        (* base case: simplify 0 + S m *)
+  reflexivity.  (* prove equality *)
+- simpl.        (* inductive case: simplify S n + S m *)
+  rewrite IHn.  (* use induction hypothesis *)
+  reflexivity.  (* prove equality *)
 Qed.
 
 (**
@@ -122,14 +122,15 @@ Check eq_add_S.
 Theorem ex7:
   forall x y n, n + x = n + y -> x = y.
 Proof.
-intros.
-induction n.
-
-- simpl in H. apply H.
-- simpl in H. apply eq_add_S in H.
-    apply IHn.
-    rewrite H.
-    reflexivity.
+intros.         (* introduce variables and hypothesis *)
+induction n.    (* induction on n *)
+- simpl in H.   (* base case: simplify hypothesis *)
+  apply H.      (* use hypothesis directly *)
+- simpl in H.   (* inductive case: simplify hypothesis *)
+  apply eq_add_S in H.  (* use auxiliary theorem *)
+  apply IHn.    (* use induction hypothesis *)
+  rewrite H.    (* use transformed hypothesis *)
+  reflexivity.  (* prove equality *)
 Qed.
 
 (**
@@ -144,33 +145,33 @@ separately.
 Theorem add_succ_r: 
   forall x y, x + S y = S (x + y).
 Proof.
-intros x y.
-induction x.
-- simpl. 
-  reflexivity.
-- simpl.
-  rewrite IHx.
-  reflexivity.
+intros x y.     (* introduce x and y into context *)
+induction x.    (* induction on x *)
+- simpl.        (* base case: simplify 0 + S y *)
+  reflexivity.  (* prove equality *)
+- simpl.        (* inductive case: simplify S x + S y *)
+  rewrite IHx.  (* use induction hypothesis *)
+  reflexivity.  (* prove equality *)
 Qed.
 
 Theorem ex8:
   forall x y, x + y = y + x.
 Proof.
-intros x y.
-induction y.
-- (* Base case: x + 0 = 0 + x *)
-  simpl.
-  assert (H: x + 0 = x).
-  { induction x.
-    - simpl. reflexivity.
-    - simpl. rewrite IHx. reflexivity. }
-  rewrite H.
-  reflexivity.
-- (* Inductive case: x + S y = S y + x *)
-  simpl.
-  rewrite add_succ_r.
-  rewrite IHy.
-  reflexivity.
+intros x y.     (* introduce x and y into context *)
+induction y.    (* induction on y *)
+- assert (H: x + 0 = x).  (* create auxiliary hypothesis *)
+  { induction x.          (* nested induction on x *)
+    - simpl.              (* base case *)
+      reflexivity.        (* prove equality *)
+    - simpl.              (* inductive case *)
+      rewrite IHx.        (* use inner induction hypothesis *)
+      reflexivity. }      (* prove equality *)
+  rewrite H.              (* use auxiliary hypothesis *)
+  reflexivity.            (* prove equality *)
+- simpl.                  (* simplify for successor case *)
+  rewrite add_succ_r.     (* use auxiliary theorem *)
+  rewrite IHy.            (* use induction hypothesis *)
+  reflexivity.            (* prove equality *)
 Qed.
 
 (**
@@ -186,11 +187,12 @@ auxiliary results. You can use Admitted theorems.
 Theorem ex9:
   forall x y n, x + n = y + n -> x = y.
 Proof.
-intros.
-rewrite ex8 in H. rewrite (ex8 y) in H. apply ex7 in H.
-rewrite H.
-reflexivity.
+intros.         (* introduce variables and hypothesis *)
+rewrite ex8 in H.     (* apply commutativity to left side *)
+rewrite (ex8 y) in H. (* apply commutativity to right side *)
+apply ex7 in H.       (* use auxiliary theorem *)
+rewrite H.            (* use transformed hypothesis *)
+reflexivity.          (* prove equality *)
 Qed.
-
 
 
