@@ -12,14 +12,14 @@ Import ListNotations.
 (* ----------sawyer----------------------------------------------------*)
 
 
-(**
+(*
 
 Study the definition of [Turing.Util.pow] and [Turing.Util.pow1]
 and then show that [Turing.Util.pow1] can be formulated in terms of
 [Turing.Util.pow].
 Material: https://gitlab.com/umb-svl/turing/blob/main/src/Util.v
 
- * )
+ *)
 Theorem ex1:
   forall (A:Type) (x:A) n, Util.pow [x] n = Util.pow1 x n.
 Proof.
