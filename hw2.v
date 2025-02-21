@@ -155,15 +155,33 @@ Theorem ex3:
   forall (X:Type) (l1 l2:list X) (x y:X), succ x y (l1 ++ (x :: y :: l2)).
 Proof.
 intros.
-
+induction l1.
+  - simpl.
+  induction l2.
+    + apply R1.
+    + apply R1.
+ - simpl.
+  apply R2.
+  apply IHl1.
 Qed.
 
 
 Theorem ex4:
-  forall (X:Type) (x y:X) (l:list X), succ x y l -> exists l1 l2, l1 ++ (x:: y:: l2) = l.
+  forall (X:Type) (x y:X) (l:list X), succ x y l -> exists l1 l2, l1 ++ (x :: y :: l2) = l.
 Proof.
-
-Admitted.
+  intros X x y l H.
+  induction H.
+  - (* Case R1: l = x :: y :: l *)
+    exists [].
+    exists l.
+    reflexivity.
+  - (* Case R2: succ x y l -> succ x y (z :: l) *)
+    destruct IHsucc as [l1 [l2 IH]].
+    exists (z :: l1), l2.
+    simpl.
+    rewrite IH.
+    reflexivity.
+Qed.
 
 
 
