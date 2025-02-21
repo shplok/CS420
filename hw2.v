@@ -44,6 +44,9 @@ Material: https://coq.inria.fr/library/Coq.Lists.List.html
 
 
  *)
+
+Check Exists_cons.
+
 Theorem ex2:
   forall (A:Type) (x:A) l, List.Exists (eq x) l <-> List.In x l.
 Proof.
@@ -52,9 +55,25 @@ induction l.
 - simpl.
   apply Exists_nil.
 -simpl.
-  rewrite Exists_cons.
-  
+  rewrite -> Exists_cons.
+  rewrite <- IHl.
+  split.
+  intros [H | H].
+  + simpl.
+    inversion H.
+    * simpl.
+      subst.
+      left.
+      reflexivity.
+  + right.
+    exact H.
 
+  + intros [H | H].
+    * left. 
+      symmetry.
+      exact H.
+    * right.
+      exact H.
 Qed.
 (**
 
@@ -74,7 +93,8 @@ the list that results from adding z to list l.
 
  *)
 Inductive succ {X : Type} (x:X) (y:X): list X -> Prop :=
-  (* TODO: FILL THIS IN AND REMOVE THIS COMMENT *).
+  | R1 : forall l, succ x y (x :: y :: l)
+  | R2 : forall z l, succ x y l -> succ x y (z :: l).
 
 
 
@@ -84,10 +104,11 @@ Theorem succ1:
      1) succ 2 3 [1;2;3;4]
      2) ~ succ 2 3 [1;2;3;4]
      *)
-    False.
+    succ 2 3 [1;2;3;4].
 Proof.
-
-Admitted.
+apply R2.
+apply R1.
+Qed.
 
 
 Theorem succ2:
@@ -96,10 +117,12 @@ Theorem succ2:
      1) succ 2 3 []
      2) ~ succ 2 3 []
      *)
-    False.
+    ~ succ 2 3 [].
 Proof.
-
-Admitted.
+unfold not.
+intros.
+inversion H.
+Qed.
 
 
 Theorem succ3:
@@ -108,24 +131,32 @@ Theorem succ3:
      1) succ 2 4 [1;2;3;4]
      2) ~ succ 2 4 [1;2;3;4]
      *)
-    False.
+    ~ succ 2 4 [1;2;3;4].
 Proof.
-
-Admitted.
+unfold not.
+intros.
+inversion H.
+inversion H1.
+inversion H4.
+inversion H7.
+inversion H10.
+Qed.
 
 
 Theorem succ4:
   forall (X:Type) (x y : Type), succ x y [x;y].
 Proof.
-
-Admitted.
+intros.
+apply R1.
+Qed.
 
 
 Theorem ex3:
   forall (X:Type) (l1 l2:list X) (x y:X), succ x y (l1 ++ (x :: y :: l2)).
 Proof.
+intros.
 
-Admitted.
+Qed.
 
 
 Theorem ex4:
