@@ -12,7 +12,6 @@ Import ListNotations.
 (* ----------sawyer----------------------------------------------------*)
 
 
-
 (**
 
 Study the definition of [Turing.Util.pow] and [Turing.Util.pow1]
@@ -20,17 +19,16 @@ and then show that [Turing.Util.pow1] can be formulated in terms of
 [Turing.Util.pow].
 Material: https://gitlab.com/umb-svl/turing/blob/main/src/Util.v
 
-
- *)
+ * )
 Theorem ex1:
   forall (A:Type) (x:A) n, Util.pow [x] n = Util.pow1 x n.
 Proof.
   intros.
   induction n.
-  - simpl.
+  - simpl. (* base case, pow and pow1 both return the identity *)
     reflexivity.
-  - simpl.
-    rewrite -> IHn.
+  - simpl. (* recursive case, pow1 should match pow applied to singleton list *)
+    rewrite -> IHn. (* applying induction hypothesis *)
     reflexivity.
 Qed.
 
@@ -42,7 +40,6 @@ of [List.Exists].
 
 Material: https://coq.inria.fr/library/Coq.Lists.List.html
 
-
  *)
 
 Check Exists_cons.
@@ -52,11 +49,11 @@ Theorem ex2:
 Proof.
 intros.
 induction l.
-- simpl.
+- simpl. (* base case, empty list, Exists_nil applies *)
   apply Exists_nil.
--simpl.
+- simpl. (* recursive case, rewriting Exists_cons *)
   rewrite -> Exists_cons.
-  rewrite <- IHl.
+  rewrite <- IHl. (* applying induction hypothesis *)
   split.
   intros [H | H].
   + simpl.
@@ -93,8 +90,8 @@ the list that results from adding z to list l.
 
  *)
 Inductive succ {X : Type} (x:X) (y:X): list X -> Prop :=
-  | R1 : forall l, succ x y (x :: y :: l)
-  | R2 : forall z l, succ x y l -> succ x y (z :: l).
+  | R1 : forall l, succ x y (x :: y :: l) (* base case, x is immediately before y *)
+  | R2 : forall z l, succ x y l -> succ x y (z :: l). (* recursive case, x precedes y deeper in l *)
 
 
 
@@ -106,8 +103,8 @@ Theorem succ1:
      *)
     succ 2 3 [1;2;3;4].
 Proof.
-apply R2.
-apply R1.
+apply R2. (* using rule R2 to progress in list *)
+apply R1. (* using rule R1 since 2 is immediately before 3 *)
 Qed.
 
 
@@ -121,7 +118,7 @@ Theorem succ2:
 Proof.
 unfold not.
 intros.
-inversion H.
+inversion H. (* empty list cannot contain succession *)
 Qed.
 
 
@@ -135,7 +132,7 @@ Theorem succ3:
 Proof.
 unfold not.
 intros.
-inversion H.
+inversion H. (* checking cases where 2 might precede 4 *)
 inversion H1.
 inversion H4.
 inversion H7.
@@ -147,7 +144,7 @@ Theorem succ4:
   forall (X:Type) (x y : Type), succ x y [x;y].
 Proof.
 intros.
-apply R1.
+apply R1. (* directly follows from R1 as x precedes y in [x;y] *)
 Qed.
 
 
@@ -156,11 +153,11 @@ Theorem ex3:
 Proof.
 intros.
 induction l1.
-  - simpl.
+  - simpl. (* base case, x and y are contiguous *)
   induction l2.
     + apply R1.
     + apply R1.
- - simpl.
+ - simpl. (* recursive case, keep propagating using R2 *)
   apply R2.
   apply IHl1.
 Qed.
@@ -172,16 +169,13 @@ Proof.
   intros X x y l H.
   induction H.
   - (* Case R1: l = x :: y :: l *)
-    exists [].
+    exists []. (* l1 is empty, x and y appear at the start *)
     exists l.
     reflexivity.
   - (* Case R2: succ x y l -> succ x y (z :: l) *)
-    destruct IHsucc as [l1 [l2 IH]].
+    destruct IHsucc as [l1 [l2 IH]]. (* breaking down induction hypothesis *)
     exists (z :: l1), l2.
     simpl.
     rewrite IH.
     reflexivity.
 Qed.
-
-
-
