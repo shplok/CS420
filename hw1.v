@@ -195,4 +195,3 @@ rewrite H.            (* use transformed hypothesis *)
 reflexivity.          (* prove equality *)
 Qed.
 
-
