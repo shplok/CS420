@@ -21,19 +21,29 @@ Open Scope char_scope.
 
 
 
+
 (**
-
 Show that any word that is in L4 is either empty or starts with "a".
-
  *)
 Theorem ex1:
   forall w, L4 w -> w = [] \/ exists w', w = "a" :: w'.
 Proof.
-intros.
-unfold L4 in H.
-destruct H as [x H].
-destruct x.
-- simpl in H. left.
+  intros w H.
+  apply l4_spec in H.
+  destruct H as [n Hn].
+  destruct n.
+  - (* Case: n = 0 *)
+    simpl in Hn.
+    left.
+    symmetry.
+    exact Hn.
+  - (* Case: n > 0 *)
+    simpl in Hn.
+    right.
+    exists (pow1 "a" n ++ pow1 "b" n).
+    rewrite <- Hn.
+
+    reflexivity.
 Admitted.
 
 (**
@@ -44,19 +54,31 @@ Show that the following word is accepted by the given language.
 Theorem ex2:
   In ["a"; "b"; "b"; "a"] ("a" >> "b" * >> "a").
 Proof.
-  (* prepare language constructs *)
-  unfold Star, In, App.
+  (* Use app_in to decompose the main concatenation *)
+  apply app_in with (w1:=["a";"b";"b"]) (w2:=["a"]).
   
-  (* decompose the word into parts *)
-  exists ["a";"b";"b"], ["a"].
+  (* Show that ["a";"b";"b"] is in "a" >> "b"* *)
+  - apply app_in with (w1:=["a"]) (w2:=["b";"b"]).
+    + (* Show ["a"] is in "a" *)
+      apply char_in.
+    + (* Show ["b";"b"] is in "b"* *)
+      exists 2. (* The exponent is 2 because "b" appears twice *)
+      (* Show ["b";"b"] is in "b"^2 *)
+      apply pow_cons with (w1:=["b"]) (w2:=["b"]).
+      * (* Show ["b"] is in "b" *)
+        apply char_in.
+      * (* Show ["b"] is in "b"^1 *)
+        apply pow_cons with (w1:=["b"]) (w2:=[]).
+        -- (* Show ["b"] is in "b" *)
+           apply char_in.
+        -- (* Show [] is in "b"^0 *)
+           apply pow_nil.
   
-  (* handle first part *)
-  split; [reflexivity |].
-  
-  (* break down the star application *)
-  split.
-
+  (* Show that ["a"] is in "a" *)
+  - apply char_in.
 Admitted.
+
+
 (**
 
 Show that the following word is rejected by the given language.
@@ -127,30 +149,49 @@ Theorem ex6:
   ("0" >> "1" U "1" >> "0") == fun w => (w = ["0"; "1"] \/ w = ["1"; "0"]).
 Proof.
   unfold Equiv.
-  split; intros H.
+  split.
   - (* forward direction *)
-    unfold In, App, Union in H.
-    destruct H as [H | H].
-    * destruct H as [x [y [H1 H2]]].
+    intros A.
+    unfold In, App, Union in A.
+    destruct A as [H | H].
+    * (* "0" >> "1" case *)
+      destruct H as [x [y [H1 H2]]].
+      destruct H2 as [H2a H2b].
+      unfold Char in H2a, H2b.
       left. 
-      unfold Char in H1, H2.
-      subst.
-       
-      
-    * destruct H as [x [y [H1 H2]]].
+      subst x. 
+      subst y.
+      simpl in H1.
+      exact H1. 
+    * (* "1" >> "0" case *)
+      destruct H as [x [y [H1 H2]]].
+      destruct H2 as [H2a H2b].
+      unfold Char in H2a, H2b.
       right. 
-      unfold Char in H1, H2.
-      subst. 
-      reflexivity.
-
+      subst x. 
+      subst y.
+      simpl in H1.
+      exact H1.
   - (* reverse direction *)
-    destruct H as [H | H].
-    * left.
+    intros A.
+    destruct A as [H | H].
+    * (* ["0"; "1"] case *)
+      left.
       exists ["0"], ["1"].
-      split; try reflexivity.
-    * right.
+      split.
+      + simpl. exact H.
+      + split.
+        -- unfold Char. reflexivity.
+        -- unfold Char. reflexivity.
+    * (* ["1"; "0"] case *)
+      right.
       exists ["1"], ["0"].
-Admitted.
+      split.
+      + simpl. exact H.
+      + split.
+        -- unfold Char. reflexivity.
+        -- unfold Char. reflexivity.
+Qed.
 
 Theorem ex7:
   "b" >> ("a" U "b" U Nil) * >> Nil == "b" >> ("b" U "a") *.
