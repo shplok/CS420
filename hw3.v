@@ -126,9 +126,31 @@ Show that the following langue only accepts two words.
 Theorem ex6:
   ("0" >> "1" U "1" >> "0") == fun w => (w = ["0"; "1"] \/ w = ["1"; "0"]).
 Proof.
+  unfold Equiv.
+  split; intros H.
+  - (* forward direction *)
+    unfold In, App, Union in H.
+    destruct H as [H | H].
+    * destruct H as [x [y [H1 H2]]].
+      left. 
+      unfold Char in H1, H2.
+      subst.
+       
+      
+    * destruct H as [x [y [H1 H2]]].
+      right. 
+      unfold Char in H1, H2.
+      subst. 
+      reflexivity.
 
+  - (* reverse direction *)
+    destruct H as [H | H].
+    * left.
+      exists ["0"], ["1"].
+      split; try reflexivity.
+    * right.
+      exists ["1"], ["0"].
 Admitted.
-
 
 Theorem ex7:
   "b" >> ("a" U "b" U Nil) * >> Nil == "b" >> ("b" U "a") *.
