@@ -54,30 +54,42 @@ Show that the following word is accepted by the given language.
 Theorem ex2:
   In ["a"; "b"; "b"; "a"] ("a" >> "b" * >> "a").
 Proof.
-  (* Use app_in to decompose the main concatenation *)
-  apply app_in with (w1:=["a";"b";"b"]) (w2:=["a"]).
+  (* directly unfold the definitions *)
+  unfold Star, In, App.
   
-  (* Show that ["a";"b";"b"] is in "a" >> "b"* *)
-  - apply app_in with (w1:=["a"]) (w2:=["b";"b"]).
-    + (* Show ["a"] is in "a" *)
-      apply char_in.
-    + (* Show ["b";"b"] is in "b"* *)
-      exists 2. (* The exponent is 2 because "b" appears twice *)
-      
-      (* Follow the exact pattern from tutorial1.v *)
-      apply pow_cons with (w1:=["b"]) (w2:=["b"]).
-      * (* For "b" *)
-        unfold Char. reflexivity.
-      * (* For "b" ^^ 1 *)
-        apply pow_cons with (w1:=["b"]) (w2:=[]).
-        -- (* For "b" *)
-           unfold Char. reflexivity.
-        -- (* For "b" ^^ 0 *)
-           apply pow_nil.
-  
-  (* Show that ["a"] is in "a" *)
-  - apply char_in.
+  (* show that the word can be split into ["a";"b";"b"] and ["a"] *)
+  exists ["a";"b";"b"], ["a"].
+  split.
+  - (* verify the concatenation equals the original word *)
+    reflexivity.
+  - split.
+    * (* show that ["a";"b";"b"] is in "a" >> "b"* *)
+      exists ["a"], ["b";"b"].
+      split.
+      + (* veify the concatenation *)
+        reflexivity.
+      + split.
+        -- (* show ["a"] is in "a" *)
+           reflexivity.
+        -- (* show ["b";"b"] is in "b"* by using the power operator with n=2 *)
+           exists 2.
+           apply pow_cons with (w1:= ["b"]) (w2:= ["b"]).
+           ** (* show ["b"] is in "b" *)
+              apply pow_cons with (w1:= ["b"]) (w2:= []).
+              ++ (* show empty list is in "b"^0 *)
+                 apply pow_nil.
+              ++ (* verify ["b"] is "b" *)
+                 reflexivity.
+              ++ (* verify concatenation *)
+                 reflexivity.
+           ** (* verify ["b"] is "b" *)
+              reflexivity.
+           ** (* verify concatenation *)
+              reflexivity.
+    * (* show ["a"] is in "a" *)
+      reflexivity.
 Qed.
+
 
 
 (**
