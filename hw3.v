@@ -40,11 +40,11 @@ Proof.
   - (* Case: n > 0 *)
     simpl in Hn.
     right.
-    exists (pow1 "a" n ++ pow1 "b" n).
-    rewrite <- Hn.
 
+    rewrite <- Hn.
+    exists (pow1 "a" n ++ pow1 "b" (S n)).
     reflexivity.
-Admitted.
+Qed.
 
 (**
 
@@ -63,20 +63,21 @@ Proof.
       apply char_in.
     + (* Show ["b";"b"] is in "b"* *)
       exists 2. (* The exponent is 2 because "b" appears twice *)
-      (* Show ["b";"b"] is in "b"^2 *)
+      
+      (* Follow the exact pattern from tutorial1.v *)
       apply pow_cons with (w1:=["b"]) (w2:=["b"]).
-      * (* Show ["b"] is in "b" *)
-        apply char_in.
-      * (* Show ["b"] is in "b"^1 *)
+      * (* For "b" *)
+        unfold Char. reflexivity.
+      * (* For "b" ^^ 1 *)
         apply pow_cons with (w1:=["b"]) (w2:=[]).
-        -- (* Show ["b"] is in "b" *)
-           apply char_in.
-        -- (* Show [] is in "b"^0 *)
+        -- (* For "b" *)
+           unfold Char. reflexivity.
+        -- (* For "b" ^^ 0 *)
            apply pow_nil.
   
   (* Show that ["a"] is in "a" *)
   - apply char_in.
-Admitted.
+Qed.
 
 
 (**
