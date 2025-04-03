@@ -33,9 +33,32 @@ Show that 'aba' is accepted the the following regular expression.
  *)
 Theorem ex1:
   ["a"; "b"; "a"] \in (r_star "a" ;; ("b" || "c") ;; r_star "a").
-Proof.
-
-Admitted.
+Proof.  
+(* we need to show that the string can be split into parts that match each piece of the regex *)
+apply accept_app with (s1:= ["a";"b"]) (s2:= ["a"]).
+  
+(* first, prove that ["a","b"] is in (r_star "a" ;; ("b" || "c")) *)
+(* split ["a","b"] into parts that match r_star "a" and ("b" || "c") *)
+- apply accept_app with (s1:= ["a"]) (s2:= ["b"]).
+    
+(* prove that ["a"] is in r_star "a" *)
+  + apply accept_star_eq. (* r_star accepts the string exactly matching one "a" *)
+      apply accept_char.  (* match the character "a" *)
+    
+  (* prove that ["b"] is in ("b" || "c") *)
+  + apply accept_union_l. (* use left option of the union *)
+      apply accept_char. (* match the character "b" *)
+    
+  (* prove that concatenating ["a"] and ["b"] gives ["a","b"] *)
+  + reflexivity.
+  
+  (* then, prove that ["a"] is in r_star "a" *)
+  - apply accept_star_eq. (* r_star accepts the string exactly matching one "a" *)
+      apply accept_char.  (* match the character "a" *)
+  
+  (* finally, prove that concatenating ["a","b"] and ["a"] gives ["a","b","a"] *)
+- reflexivity.
+Qed.
 
 (**
 
@@ -45,6 +68,13 @@ Show that 'bb' is rejected by the following regular expression.
 Theorem ex2:
   ~ (["b"; "b"] \in (r_star "a" ;; ("b" || "c") ;; r_star "a")).
 Proof.
+(* introduce a contradiction *)
+unfold not. intros H.
+inversion H.
+destruct s1; destruct s2; destruct s3; try discriminate.
+- inversion H.
+   
+
 
 Admitted.
 
