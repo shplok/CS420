@@ -154,11 +154,35 @@ The proof must proceed by induction.
 
 
  *)
+
+Fixpoint r_word' l :=
+    match l with
+    | nil => r_nil
+    | x :: l => (r_char x) ;; r_word' l
+    end.
+
+Ltac unfsubst := unfold In in *; subst.
+
 Theorem ex5:
   forall l, exists (r_word:list ascii -> regex), Accept (r_word l) == fun w => w = l.
 Proof.
-
-Admitted.
+intros.
+exists r_word'. (* introduce our function *)
+induction l.
+- apply r_nil_rw. (* empty list accepts only empty string *)
+- simpl. (* simplify r_word' for nil case *)
+  rewrite r_app_rw. rewrite IHl. rewrite r_char_rw. (* apply character language equivalence *)
+  clear IHl. 
+  split; intros. (* prove both directions of the equivalence *)
+  + apply app_l_char_in_inv in H. 
+    destruct H as (wo1, (wo2, H)).
+    unfsubst.
+    reflexivity.  (* this completes the forward direction *)
+  + unfsubst.
+    apply app_l_char_in. (* apply concatenation with character *)
+    unfold In.
+    reflexivity. (* this completes the reverse direction *)
+Qed.
 
 (**
 
@@ -171,8 +195,38 @@ regular expression that recognizes the language.
 Theorem ex6:
   exists r, (Accept r == fun w => w = ["a"; "c"] \/ w = ["b"; "c"]) /\ size r = 5.
 Proof.
-
-Admitted.
+  exists (("a" || "b") ;; "c"). (* claim this regex matches exactly the two strings *)
+  simpl. (* simplify the size calculation *)
+  split. (* prove both parts of the conjunction *)
+  - rewrite r_app_rw. (* apply equivalence rule for concatenation language *)
+    rewrite r_union_rw. (* apply equivalence rule for union language *)
+    split. (* break down the bi-implication *)
+    + intros. (* prove forward direction: if w in language, then w = ["a";"c"] or w = ["b";"c"] *)
+      unfold In in *. (* unfold the In predicate *)
+      destruct H as (l, (l2, (H1, (H2, H3)))). (* destructure the hypothesis *)
+      invc H2. (* invert the hypothesis about the second part *)
+      -- invc H. invc H3. (* invert hypotheses about first part and concatenation *)
+         left. reflexivity. (* prove w = ["a";"c"] *)
+      -- invc H. invc H3. (* invert hypotheses about first part and concatenation *)
+         right. reflexivity. (* prove w = ["b";"c"] *)
+    + intros. (* prove reverse direction: if w = ["a";"c"] or w = ["b";"c"], then w in language *)
+      unfold In in H. (* unfold the In predicate in hypothesis *)
+      destruct H. (* case analysis on the disjunction *)
+      -- subst. (* substitute w with ["a";"c"] *)
+         apply app_in with (w1 := ["a"]) (w2 := ["c"]); unfold In.
+         ++ apply r_union_rw. (* apply union equivalence *)
+            apply accept_union_l. (* use left side of union *)
+            apply accept_char. (* apply character acceptance *)
+         ++ apply accept_char. (* apply character acceptance *)
+         ++ reflexivity. (* prove concatenation *)
+      -- apply app_in with (w1 := ["b"]) (w2 := ["c"]); unfold In.
+         ++ apply r_union_rw. (* apply union equivalence *)
+            apply accept_union_r. (* use right side of union *)
+            apply accept_char. (* apply character acceptance *)
+         ++ constructor. (* apply character acceptance *)
+         ++ subst; reflexivity. (* prove concatenation *)
+  - reflexivity. (* size of (("a" || "b") ;; "c") is 5 *)
+Qed.
 
 
 
