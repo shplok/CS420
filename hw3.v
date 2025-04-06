@@ -19,9 +19,6 @@ Open Scope char_scope.
 (* ---------------------------------------------------------------------------*)
 
 
-
-
-
 (**
 Show that any word that is in L4 is either empty or starts with "a".
  *)
@@ -89,8 +86,6 @@ Proof.
     * (* show ["a"] is in "a" *)
       reflexivity.
 Qed.
-
-
 
 (**
 
@@ -215,6 +210,11 @@ Proof.
            unfold Char. reflexivity.
 Qed.
 
+
+(**
+Show language equivalence by applying various language operation laws.
+ *)
+
 Theorem ex7:
   "b" >> ("a" U "b" U Nil) * >> Nil == "b" >> ("b" U "a") *.
 Proof.
@@ -239,6 +239,10 @@ split.
 Qed.
 
 
+(**
+Reduce a complex language expression to a simpler equivalent language.
+ *)
+
 Theorem ex8:
   (("b" >> ("a" U {}) ) U (Nil >> {} >> "c")* ) * == ("b" >> "a") *.
 Proof.
@@ -255,14 +259,14 @@ split.
   rewrite star_union_nil_rw in H.
   exact H.
  
-(* Reverse direction *)
-- intros H.
-  (* Reapply void and union rewriting rules *)
-  rewrite union_r_void_rw.
-  rewrite app_r_void_rw.
-  rewrite app_l_void_rw.
-  rewrite star_void_rw.
-  rewrite union_sym_rw.
-  rewrite star_union_nil_rw.
-  exact H.
+
+  (* Reverse direction: reapply the same language rewriting laws *)
+  - intros H.
+    rewrite union_r_void_rw.
+    rewrite app_r_void_rw.
+    rewrite app_l_void_rw.
+    rewrite star_void_rw.
+    rewrite union_sym_rw.
+    rewrite star_union_nil_rw.
+    exact H.
 Qed.
