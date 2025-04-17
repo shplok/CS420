@@ -136,8 +136,7 @@ intros A B H. (* Introduce defined Vars and Hypothesis *)
 invc. (* perform inversion *)
 destruct u.
 - 
-Qed.
-
+Admitted.
 (**
 
 You will want to use `yield_inv_start`. Recall that that `List.In`
