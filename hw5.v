@@ -127,16 +127,22 @@ string `u`.
 
 
  *)
-Ltac invc := inversion H; subst; clear.
+
 
 Theorem yield_inv_start:
   forall G w, Hw5Util.Yield G [Hw5Util.grammar_start G] w -> In (Hw5Util.grammar_start G, w) (Hw5Util.grammar_rules G).
 Proof.
-intros A B H. (* Introduce defined Vars and Hypothesis *)
-invc. (* perform inversion *)
-destruct u.
-- 
-Admitted.
+intros. (* Introduce defined Vars and Hypothesis *)
+inversion H; subst; clear H. (* perform inversion *)
+
+destruct u. (* Case analysis on whether u is empty or not *)
+- inversion H1; subst; clear H1. (* If u is empty, simplify [grammar_start G] = [] ++ v ++ w0 *)
+rewrite app_nil_r. (* Simplify by removing empty list at the end *)
+apply H0. (* The rule directly gives us what we need to prove *)
+- induction u. (* If u is non-empty, we do induction on its structure *)
+  + inversion H1. (* Case where u starts as [], but this contradicts our assumption *)
+  + inversion H1. (* Case where u starts with a cons, also leads to contradiction *)
+Qed.
 (**
 
 You will want to use `yield_inv_start`. Recall that that `List.In`
@@ -147,8 +153,18 @@ simplifies to a series of disjunctions.
 Theorem g1_ex1:
   ~ Hw5Util.Yield g1 ["C"] ["{"].
 Proof.
-
-Admitted.
+unfold not. (* unfold the inverse of theorem *)
+intros. (* introduce hypothesis *)
+apply yield_inv_start in H. (* apply developed inversive theorem *)
+destruct H. (* Case analysis on how this element could be in the list *)
+- inversion H. (* First case leads to contradiction *)
+- unfold In in H. (* Examine what it means for this to be in the list *)
+inversion H. (* Break down the disjunction *)
+  + inversion H0. (* leads to contradiction *)
+  + inversion H0. (* leads to contradiction *)
+    * inversion H1. (* leads to contradiction *)
+    * inversion H1. (* leads to contradiction *)
+Qed.
 
 (**
 
@@ -159,8 +175,11 @@ The idea is to use either: `yield_left`, `yield_right`, or `yield_def`.
 Theorem g1_step_1:
   Hw5Util.Yield g1 ["C"; "C"] ["{"; "C"; "}"; "C"].
 Proof.
-
-Admitted.
+apply yield_right with (r := ["C"]) (w1 := ["C"]) (w2 := ["{"; "C"; "}"]). (* yield_right with the accurate values*)
+- apply yield_eq. simpl; auto. (* apply simpl, auto like before *)
+- reflexivity. (* recognize reflexivity and simplify *)
+- reflexivity. (* recognize reflexivity and simplify *)
+Qed.
 
 (**
 
@@ -171,8 +190,12 @@ The idea is to use either: `yield_left`, `yield_right`, or `yield_def`.
 Theorem g1_step_2:
   Hw5Util.Yield g1 ["{"; "C"; "}"; "C"] ["{"; "}"; "C"].
 Proof.
-
-Admitted.
+apply yield_def with (u:= ["{"]) (v:= ["}"; "C"]) (w:= []) (A:= "C").
+(* Apply yield_def by decomposing the strings appropriately to match the C → ε rule in g1 *)
+- simpl; auto. (* Apply the grammar rule that C can produce the empty string *)
+- reflexivity. (* Verify first string equals u ++ v ++ w *)
+- reflexivity. (* Verify second string equals u ++ A ++ w *)
+Qed.
 
 (**
 
@@ -183,8 +206,13 @@ The idea is to use either: `yield_left`, `yield_right`, or `yield_def`.
 Theorem g1_step_3:
   Hw5Util.Yield g1 ["{"; "}"; "C"] ["{"; "}"; "{"; "C"; "}"].
 Proof.
-
-Admitted.
+simpl.
+apply yield_def with (u:= ["{"; "}"]) (v:= []) (w:= ["{"; "C"; "}"]) (A:= "C").
+(* show C can produce {C} at the appropriate position *)
+- simpl; auto. (* Apply the grammar rule that C can produce {C} *)
+- reflexivity. (* sides equal *)
+- reflexivity. (* sides equal *)
+Qed.
 
 (**
 
@@ -195,8 +223,11 @@ The idea is to use either: `yield_left`, `yield_right`, or `yield_def`.
 Theorem g1_step_4:
   Hw5Util.Yield g1 ["{"; "}"; "{"; "C"; "}"] ["{"; "}"; "{"; "}"].
 Proof.
-
-Admitted.
+apply yield_def with (u:= ["{"; "}"; "{"]) (v:= ["}"]) (w:= []) (A:= "C"). (* use yield_def with accurate values*)
+- simpl; auto. (* apply formatting *)
+- reflexivity. (*sides equal *)
+- reflexivity. (*sides equal *)
+Qed.
 
 (**
 
@@ -206,8 +237,8 @@ Use either `derivation_nil` or `derivation_cons`.
 Theorem g1_der_1:
   Hw5Util.Derivation g1 [["C"]].
 Proof.
-
-Admitted.
+apply derivation_nil. (* apply base case *)
+Qed.
 
 (**
 
@@ -217,8 +248,11 @@ Use either `derivation_nil` or `derivation_cons`.
 Theorem g1_der_2:
   Hw5Util.Derivation g1 [["C"; "C"]; ["C"]].
 Proof.
-
-Admitted.
+apply derivation_cons. (* apply cons *)
+- apply derivation_nil. (* base case *)
+- apply yield_eq. (* apply the yield_eq lemma *)
+simpl; auto. (* simplify in format *)
+Qed.
 
 (**
 
@@ -228,8 +262,13 @@ Use either `derivation_nil` or `derivation_cons`.
 Theorem g1_der_3:
   Hw5Util.Derivation g1 [["{"; "C"; "}"; "C"]; ["C"; "C"]; ["C"]].
 Proof.
-
-Admitted.
+apply derivation_cons. (* apply cons *)
+- apply derivation_cons. (* apply cons *)
+  + apply derivation_nil. (* apply nil base case *)
+  + apply yield_eq. (* apply yield_eq developed lemma *)
+  simpl; auto. (* simplify in format *)
+- apply g1_step_1. (* apply previously derived theorem *)
+Qed.
 
 
 Theorem g1_der_4:
@@ -240,8 +279,15 @@ Theorem g1_der_4:
     ["C"]
 ].
 Proof.
-
-Admitted.
+apply derivation_cons. (* Add ["{"; "}"; "C"] to the beginning of the derivation *)
+- apply derivation_cons. (* Add ["{"; "C"; "}"; "C"] to the beginning of the derivation *)
+  + apply derivation_cons.
+    * apply derivation_nil. (* base case *)
+    * apply yield_eq. (* Prove that C can yield CC in one step *)
+      simpl; auto. (* simplify in format *)
+  + apply g1_step_1. (* apply previously derived theorem *)
+- apply g1_step_2. (* apply previously derived theorem *)
+Qed.
 
 
 Theorem g1_der_5:
@@ -253,8 +299,17 @@ Theorem g1_der_5:
     ["C"]
 ].
 Proof.
-
-Admitted.
+apply derivation_cons. (* Add ["{"; "}"; "{"; "C"; "}"] to the beginning of the derivation *)
+- apply derivation_cons. (* Add ["{"; "}"; "C"] to the beginning of the derivation *)
+  + apply derivation_cons. (* Add ["{"; "C"; "}"; "C"] to the beginning of the derivation *)
+    * apply derivation_cons. (* Add ["C"; "C"] to the beginning of the derivation *)
+      -- apply derivation_nil. (* Base Case *)
+      -- apply yield_eq. (* Prove that C can yield CC in one step *)
+         simpl; auto.
+    * apply g1_step_1. (* Apply previously proven step that CC yields {C}C *)
+  + apply g1_step_2. (* Apply previously proven step that {C}C yields {}C *)
+- apply g1_step_3. (* Apply previously proven step that {}C yields {}{C} *)
+Qed.
 
 
 Theorem g1_der_6:
@@ -267,8 +322,19 @@ Theorem g1_der_6:
     ["C"]
 ].
 Proof.
-
-Admitted.
+apply derivation_cons. (* apply cons derivation *)
+- apply derivation_cons. (* apply cons derivation *)
+  + apply derivation_cons. (* apply cons derivation *)
+    * apply derivation_cons. (* apply cons derivation *)
+      -- apply derivation_cons. (* apply cons derivation *)
+          ++ apply derivation_nil. (* apply nil derivation *)
+          ++ apply yield_eq. (* Prove that C can yield CC in one step *)
+             simpl; auto.
+      -- apply g1_step_1. (* apply logic similar to g1_der_5 *)
+    * apply g1_step_2. (* apply logic similar to g1_der_5 *)
+  + apply g1_step_3. (* apply logic similar to g1_der_5 *)
+- apply g1_step_4. (* apply logic similar to g1_der_5 *)
+Qed.
 
 (**
 
@@ -278,8 +344,20 @@ Use `g1_der_6`.
 Theorem ex1:
   Accept g1 ["{"; "}"; "{"; "}"].
 Proof.
-
-Admitted.
+(* Show a derivation exists that accepts the string ["{"; "}"; "{"; "}"] *)
+exists [["{"; "}"; "{"; "C"; "}"]; ["{"; "}"; "C"]; ["{"; "C"; "}"; "C"]; ["C"; "C"]; ["C"]].
+- apply g1_der_6. (* Use previously proven derivation theorem g1_der_6 *)
+- apply Forall_cons. (* Show that final string matches terminals by checking each element *)
+  + left. reflexivity.  (* Prove "{" is a terminal *)
+  + apply Forall_cons.
+    * right.
+      left. reflexivity.  (* Prove "}" is a terminal *)
+    * apply Forall_cons.
+      -- left. reflexivity. (* Prove "{" is a terminal *)
+      -- apply Forall_cons.
+        ++ right. left. reflexivity.   (* Prove "}" is a terminal *)
+        ++ apply Forall_nil. (* base case *)
+Qed.
 
 
 
